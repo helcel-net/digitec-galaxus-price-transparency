@@ -10,9 +10,7 @@
     "version": "1.0",
     "description": "Fetch price history and display the lowest prices.",
     "permissions": [
-        "scripting",
-        "storage",
-        "activeTab"
+        "scripting"
     ],
     "host_permissions": [
         "*://*.digitec.ch/*",
