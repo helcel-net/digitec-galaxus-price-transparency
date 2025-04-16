@@ -3,6 +3,9 @@ name: Upload Release Build
 on:
   release:
     types: [published]
+  push:
+    tags:
+      - 'v*'
 
 jobs:
   release:
@@ -90,3 +93,31 @@ jobs:
           zip-path: ./builds/EdgeExtension.zip
           api-key: ${{ secrets.EDGE_CLIENT_SECRET }}
           client-id: ${{ secrets.EDGE_CLIENT_ID }}
+
+      - name: Get tag or release info
+        id: get_release
+        run: |
+          echo "tag_name=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+        if: github.event_name == 'push'
+
+      - name: Upload release assets (from release event)
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            builds/FirefoxExtension.xpi
+            builds/ChromeExtension.zip
+            builds/EdgeExtension.zip
+
+      - name: Upload release assets (from push event)
+        if: github.event_name == 'push'
+        run: |
+          gh release create "${{ steps.get_release.outputs.tag_name }}" \
+            --title "${{ steps.get_release.outputs.tag_name }}" \
+            --notes "Automated release for ${{ steps.get_release.outputs.tag_name }}" \
+            builds/FirefoxExtension.xpi \
+            builds/ChromeExtension.zip \
+            builds/EdgeExtension.zip
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
