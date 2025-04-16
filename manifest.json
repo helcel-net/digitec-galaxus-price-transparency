@@ -1,5 +1,11 @@
 {
     "manifest_version": 3,
+    "browser_specific_settings": {
+        "gecko": {
+            "id": "net.helcel.digitec-galaxus@browser"
+        }
+    },
+
     "name": "Digitec & Galaxus Helper",
     "version": "1.0",
     "description": "Fetch price history and display the lowest prices.",
@@ -13,7 +19,8 @@
         "*://*.galaxus.ch/*"
     ],
     "background": {
-        "service_worker": "background.js"
+        "{{chrome}}.service_worker": "background.js",
+        "scripts":["background.js"]
     },
     "content_scripts": [
         {
