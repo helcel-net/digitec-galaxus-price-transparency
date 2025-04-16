@@ -1,0 +1,37 @@
+{
+    "manifest_version": 3,
+    "name": "Digitec & Galaxus Helper",
+    "version": "1.0",
+    "description": "Fetch price history and display the lowest prices.",
+    "permissions": [
+        "scripting",
+        "storage",
+        "activeTab"
+    ],
+    "host_permissions": [
+        "*://*.digitec.ch/*",
+        "*://*.galaxus.ch/*"
+    ],
+    "background": {
+        "service_worker": "background.js"
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "*://*.digitec.ch/*",
+                "*://*.galaxus.ch/*"
+            ],
+            "js": [
+                "content_script.js"
+            ]
+        }
+    ],
+    "action": {
+        "default_popup": "popup.html",
+        "default_icon": {
+            "16": "icon16.png",
+            "48": "icon48.png",
+            "128": "icon128.png"
+        }
+    }
+}
