@@ -37,9 +37,6 @@ jobs:
     if: needs.check-version.outputs.is-released == 'false'
     name: Release
     runs-on: ubuntu-latest
-    outputs:
-      firefox_success: ${{ steps.step-firefox.outcome }}
-      chrome_success: ${{ steps.step-chrome.outcome }}
     steps:
       # Checkout the code
       - name: Checkout code
@@ -68,30 +65,23 @@ jobs:
         run: npm run build:ci:firefox
       - name: Build for Chrome
         run: npm run build:ci:chrome
-      - name: Build for Edge
-        run: npm run build:ci:edge
+    #  - name: Build for Edge
+    #    run: npm run build:ci:edge
 
       # Sign & Upload Firefox artifacts
+      - name: Zip Chrome
+        if: steps.step-chrome.outcome == 'success'
+        run: cd ./dist/firefox ; zip -r ../../builds/FirefoxExtension.zip *
       - name: Publish Firefox
         continue-on-error: true
-        id: step-firefox
         env:
           FIREFOX_ISSUER: ${{ secrets.FIREFOX_ISSUER }}
           FIREFOX_SECRET: ${{ secrets.FIREFOX_SECRET }}
         run: npx web-ext sign --channel listed -s ./dist/firefox/ --upload-source-code  ../builds/Source.zip --artifacts-dir ./dist/firefox --api-key $FIREFOX_ISSUER --api-secret $FIREFOX_SECRET
-      - name: Move Firefox
-        if: steps.step-firefox.outcome == 'success'
-        run: mv ./dist/firefox/digitec_galaxus_helper-*.xpi ./builds/FirefoxExtension.xpi
-      - name: Attach Firefox
-        if: steps.step-firefox.outcome == 'success'
-        uses: Shopify/upload-to-release@07611424e04f1475ddf550e1c0dd650b867d5467
-        with:
-          name: FirefoxExtension.xpi
-          path: ./builds/FirefoxExtension.xpi
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Zip Chrome
+        run: cd ./dist/chrome ; zip -r ../../builds/ChromeExtension.zip *
       - name: Publish Chrome
-        id: step-chrome
         continue-on-error: true
         uses: wdzeng/chrome-extension@v1
         with:
@@ -100,16 +90,6 @@ jobs:
           refresh-token: ${{ secrets.CHROME_REFRESH_TOKEN }}
           zip-path: ./builds/ChromeExtension.zip
           extension-id: opkinhhinaicnbmofgkocallpfeiggnh
-      - name: Zip Chrome
-        if: steps.step-chrome.outcome == 'success'
-        run: cd ./dist/chrome ; zip -r ../../builds/ChromeExtension.zip *
-      - name: Attach Chrome
-        if: steps.step-chrome.outcome == 'success'
-        uses: Shopify/upload-to-release@07611424e04f1475ddf550e1c0dd650b867d5467
-        with:
-          name: ChromeExtension.zip
-          path: ./builds/ChromeExtension.zip
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
       # Upload Edge artifacts
       # - name: Zip Edge Artifacts
       #   run: cd ./dist/edge ; zip -r ../../builds/EdgeExtension.zip *
@@ -134,27 +114,17 @@ jobs:
           VERSION=$(jq -r .version manifest.json)
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
-      - name: Upload release assets (from release event)
-        if: github.event_name == 'release'
+      - name: Upload release assets (from push event)
+        if: github.event_name == 'push'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.get_version.outputs.version }}
           name: ${{ steps.get_version.outputs.version }}
           body: "Automated release for ${{ steps.get_version.outputs.version }}"
           files: |
-            builds/FirefoxExtension.xpi
-            builds/ChromeExtension.zip
-            builds/EdgeExtension.zip
-
-      - name: Upload release assets (from push event)
-        if: github.event_name == 'push'
-        run: |
-          gh release create "${{ steps.get_version.outputs.version }}" \
-            --title "${{ steps.get_version.outputs.version }}" \
-            --notes "Automated release for ${{ steps.get_version.outputs.version }}" \
-            builds/FirefoxExtension.xpi \
-            builds/ChromeExtension.zip \
-            builds/EdgeExtension.zip
+            builds/FirefoxExtension.zip
+            builds/ChromeExtension.zip  
+        #builds/EdgeExtension.zip
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
