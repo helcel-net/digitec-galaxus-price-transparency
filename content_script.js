@@ -179,9 +179,29 @@ const handleCart = () => {
     });
 }
 
-const handleCompare = () => {
+const handleCompare = () => 
+    scriptURL.then(url => {
+        const list = document.getElementsByTagName('article')
+        for (let e of list) {
+            fetchPriceHistory(getProductIdFromURL(e.querySelector('a').href.split('?')[0]), url).then(v => {
+                const currPrice = v.data.productById.price.amountInclusive
+                const priceList = v.data.productById.priceHistory.points.filter(v => v.price).map(v => v.price.amountInclusive)
+                const minPrice = getPercentileValue(priceList, 0.1);//Math.min(...priceList)
 
-}
+                const target = e.querySelector('div:nth-of-type(1)')
+                const priceIndicator = document.createElement('span')
+                priceIndicator.classList = "yPbdh5x1"
+                priceIndicator.innerHTML = `
+                ${genPriceHTML(currPrice)}
+                <small class="">${getPriceString()} 
+                  ${genPriceHTML(minPrice)}
+                </small>`
+                target.querySelector('span').style.display = 'none';
+                target.appendChild(priceIndicator)
+                
+            }).catch(e => console.error(e))
+        }
+    });
 
 const productRegex = /https?:\/\/[www\.]*[a-z]+\.ch\/[a-zA-Z]{2,}\/[a-zA-Z0-9-]+\/product\//
 const cartRegex = /https?:\/\/[www\.]*[a-z]+\.ch\/[a-zA-Z]{2,}\/cart/
@@ -190,11 +210,11 @@ const compareRegex = /https?:\/\/[www\.]*[a-z]+\.ch\/[a-zA-Z]{2,}\/comparison\//
 
 
 const refreshFunction = () => {
-    if (false) return '';
+    if (false) return Promise.resolve('');
     else if (productRegex.test(window.location.href)) return handleCurrentProduct();
     else if (cartRegex.test(window.location.href)) return handleCart();
     else if (compareRegex.test(window.location.href)) return handleCompare();
-    else return '';
+    else return Promise.resolve('');
 }
 
 var currentUrl = '';
