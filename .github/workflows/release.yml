@@ -1,14 +1,40 @@
 name: Upload Release Build
 
 on:
-  release:
-    types: [published]
   push:
-    tags:
-      - 'v*'
+    branches: [main]
+  workflow_dispatch: #manual
 
 jobs:
+  check-version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.get-version.outputs.version }}
+      is-released: ${{ steps.check-release.outputs.exists }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Extract version from manifest.json
+        id: get-version
+        run: |
+          VERSION=$(jq -r .version manifest.json)
+          echo "Version is $VERSION"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Check if version tag already exists
+        id: check-release
+        run: |
+          if git fetch --tags && git rev-parse "v${{ steps.get-version.outputs.version }}" >/dev/null 2>&1; then
+            echo "Release already exists"
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "No release found"
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
   release:
+    needs: check-version
+    if: needs.check-version.outputs.is-released == 'false'
     name: Release
     runs-on: ubuntu-latest
     outputs:
@@ -102,16 +128,19 @@ jobs:
       #     api-key: ${{ secrets.EDGE_CLIENT_SECRET }}
       #     client-id: ${{ secrets.EDGE_CLIENT_ID }}
 
-      - name: Get tag or release info
-        id: get_release
+      - name: Extract version from manifest.json
+        id: get_version
         run: |
-          echo "tag_name=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
-        if: github.event_name == 'push'
+          VERSION=$(jq -r .version manifest.json)
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Upload release assets (from release event)
         if: github.event_name == 'release'
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ steps.get_version.outputs.version }}
+          name: ${{ steps.get_version.outputs.version }}
+          body: "Automated release for ${{ steps.get_version.outputs.version }}"
           files: |
             builds/FirefoxExtension.xpi
             builds/ChromeExtension.zip
@@ -120,9 +149,9 @@ jobs:
       - name: Upload release assets (from push event)
         if: github.event_name == 'push'
         run: |
-          gh release create "${{ steps.get_release.outputs.tag_name }}" \
-            --title "${{ steps.get_release.outputs.tag_name }}" \
-            --notes "Automated release for ${{ steps.get_release.outputs.tag_name }}" \
+          gh release create "${{ steps.get_version.outputs.version }}" \
+            --title "${{ steps.get_version.outputs.version }}" \
+            --notes "Automated release for ${{ steps.get_version.outputs.version }}" \
             builds/FirefoxExtension.xpi \
             builds/ChromeExtension.zip \
             builds/EdgeExtension.zip
