@@ -134,7 +134,7 @@ const handleBrowse = () => {
 }
 
 const handleCart = () =>  scriptURL
-    .then(url => Promise.all(document.getElementById('pageContent').querySelector('section > ul').children.map(e=>
+    .then(url => Promise.all(Array.from(document.getElementById('pageContent').querySelector('section > ul').children).map(e=>
         fetchPriceHistory(getProductIdFromURL(e.querySelector('a').href.split('?')[0]), url).then(v => {
             const currPrice = v.data.productById.price.amountInclusive
             const priceList = v.data.productById.priceHistory.points.filter(v => v.price).map(v => v.price.amountInclusive)
@@ -177,7 +177,7 @@ const handleCart = () =>  scriptURL
 
 const handleCompare = () => scriptURL
     .then(url => 
-        Promise.all(document.getElementsByTagName('article').map(e=>
+        Promise.all(Array.from(document.getElementsByTagName('article')).map(e=>
             fetchPriceHistory(getProductIdFromURL(e.querySelector('a').href.split('?')[0]), url).then(v => {
                 const currPrice = v.data.productById.price.amountInclusive
                 const priceList = v.data.productById.priceHistory.points.filter(v => v.price).map(v => v.price.amountInclusive)
@@ -198,7 +198,7 @@ const handleCompare = () => scriptURL
 
 const handleShoplist = () => scriptURL
     .then(url => 
-        Promise.all(document.getElementsByTagName('article').map(e=>
+        Promise.all(Array.from(document.getElementsByTagName('article')).map(e=>
             fetchPriceHistory(getProductIdFromURL(e.querySelector('a').href.split('?')[0]), url).then(v => {
                 const currPrice = v.data.productById.price.amountInclusive
                 const priceList = v.data.productById.priceHistory.points.filter(v => v.price).map(v => v.price.amountInclusive)
