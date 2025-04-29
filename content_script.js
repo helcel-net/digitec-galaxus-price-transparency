@@ -97,7 +97,7 @@ const getProductIdFromURL = (url) => {
 
 const handleCurrentProduct = async () => {
     scriptURL
-        .then(url => fetchPriceHistory(getProductIdFromURL(window.location.href), url))
+        .then(url => fetchPriceHistory(getProductIdFromURL(window.location.pathname), url))
         .then(v => {
             const currPrice = v.data.productById.price.amountInclusive
             const priceList = v.data.productById.priceHistory.points.filter(v => v.price).map(v => v.price.amountInclusive)
@@ -138,7 +138,7 @@ const handleCart = () => {
     scriptURL.then(url => {
         const list = document.getElementById('pageContent').querySelector('section > ul').children
         for (let e of list) {
-            fetchPriceHistory(getProductIdFromURL(e.querySelector('a').href), url).then(v => {
+            fetchPriceHistory(getProductIdFromURL(e.querySelector('a').href.split('?')[0]), url).then(v => {
                 const currPrice = v.data.productById.price.amountInclusive
                 const priceList = v.data.productById.priceHistory.points.filter(v => v.price).map(v => v.price.amountInclusive)
                 const minPrice = getPercentileValue(priceList, 0.1);//Math.min(...priceList)
@@ -179,22 +179,28 @@ const handleCart = () => {
     });
 }
 
-const productRegex = /https?:\/\/[www\.]*[a-z]+\.ch\/[a-zA-Z]{2,}\/[a-zA-Z0-9-]+\/product\/[a-zA-Z0-9-]+/
-const cartRegex = /https?:\/\/[www\.]*[a-z]+\.ch\/[a-zA-Z]{2,}\/cart/
+const handleCompare = () => {
 
-let currentUrl = '';
+}
+
+const productRegex = /https?:\/\/[www\.]*[a-z]+\.ch\/[a-zA-Z]{2,}\/[a-zA-Z0-9-]+\/product\//
+const cartRegex = /https?:\/\/[www\.]*[a-z]+\.ch\/[a-zA-Z]{2,}\/cart/
+const compareRegex = /https?:\/\/[www\.]*[a-z]+\.ch\/[a-zA-Z]{2,}\/comparison\//
+
 
 
 const refreshFunction = () => {
     if (false);
     else if (productRegex.test(window.location.href)) handleCurrentProduct();
     else if (cartRegex.test(window.location.href)) handleCart();
+    else if (compareRegex.test(window.location.href)) handleCompare();
     else;
 }
 
+var currentUrl = '';
 setInterval(() => {
-    if (currentUrl !== window.location.href) {
-        currentUrl = window.location.href;
-        refreshFunction();
-    }
+    if (currentUrl !== window.location.href)
+        refreshFunction().then(_ => {
+            currentUrl = window.location.href;
+        });
 }, 500);
