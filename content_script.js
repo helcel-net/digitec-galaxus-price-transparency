@@ -190,11 +190,11 @@ const compareRegex = /https?:\/\/[www\.]*[a-z]+\.ch\/[a-zA-Z]{2,}\/comparison\//
 
 
 const refreshFunction = () => {
-    if (false);
-    else if (productRegex.test(window.location.href)) handleCurrentProduct();
-    else if (cartRegex.test(window.location.href)) handleCart();
-    else if (compareRegex.test(window.location.href)) handleCompare();
-    else;
+    if (false) return '';
+    else if (productRegex.test(window.location.href)) return handleCurrentProduct();
+    else if (cartRegex.test(window.location.href)) return handleCart();
+    else if (compareRegex.test(window.location.href)) return handleCompare();
+    else return '';
 }
 
 var currentUrl = '';
