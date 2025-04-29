@@ -48,19 +48,13 @@ jobs:
       - name: Create directory
         run: cd ..; mkdir ./builds
 
-      # Zip the source code
       - name: Zip Source
         run: zip -r ../builds/Source.zip *
-
-      # Install dependencies
       - name: Install dependencies
         run: npm i
-
-      # Create build directory
       - name: Create build directory
         run: mkdir ./builds
 
-      # Build for Firefox, Chrome and Edge
       - name: Build for Firefox
         run: npm run build:ci:firefox
       - name: Build for Chrome
@@ -68,10 +62,11 @@ jobs:
     #  - name: Build for Edge
     #    run: npm run build:ci:edge
 
-      # Sign & Upload Firefox artifacts
-      - name: Zip Chrome
-        if: steps.step-chrome.outcome == 'success'
+      - name: Zip Firefox
         run: cd ./dist/firefox ; zip -r ../../builds/FirefoxExtension.zip *
+      - name: Zip Chrome
+        run: cd ./dist/chrome ; zip -r ../../builds/ChromeExtension.zip *
+        
       - name: Publish Firefox
         continue-on-error: true
         env:
@@ -79,8 +74,6 @@ jobs:
           FIREFOX_SECRET: ${{ secrets.FIREFOX_SECRET }}
         run: npx web-ext sign --channel listed -s ./dist/firefox/ --upload-source-code  ../builds/Source.zip --artifacts-dir ./dist/firefox --api-key $FIREFOX_ISSUER --api-secret $FIREFOX_SECRET
 
-      - name: Zip Chrome
-        run: cd ./dist/chrome ; zip -r ../../builds/ChromeExtension.zip *
       - name: Publish Chrome
         continue-on-error: true
         uses: wdzeng/chrome-extension@v1
