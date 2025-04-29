@@ -183,7 +183,7 @@ const handleCompare = () => scriptURL
                 const priceList = v.data.productById.priceHistory.points.filter(v => v.price).map(v => v.price.amountInclusive)
                 const minPrice = getPercentileValue(priceList, 0.1);//Math.min(...priceList)
 
-                const target = e.querySelector('div:nth-of-type(1)')
+                const target = e.querySelector(':scope > div:nth-of-type(2)')
                 const priceIndicator = document.createElement('span')
                 priceIndicator.classList = "yPbdh5x1"
                 priceIndicator.innerHTML = `
@@ -198,13 +198,13 @@ const handleCompare = () => scriptURL
 
 const handleShoplist = () => scriptURL
     .then(url => 
-        Promise.all(Array.from(document.getElementsByTagName('article')).map(e=>
+        Promise.all(Array.from(document.getElementById('pageContent').querySelectorAll('article')).map(e=>
             fetchPriceHistory(getProductIdFromURL(e.querySelector('a').href.split('?')[0]), url).then(v => {
                 const currPrice = v.data.productById.price.amountInclusive
                 const priceList = v.data.productById.priceHistory.points.filter(v => v.price).map(v => v.price.amountInclusive)
                 const minPrice = getPercentileValue(priceList, 0.1);//Math.min(...priceList)
 
-                const target = e.querySelector('div:nth-of-type(-2)')
+                const target = e.querySelector(':scope > div:nth-last-of-type(2)')
                 const priceIndicator = document.createElement('span')
                 priceIndicator.classList = "yRGTUHk1"
                 priceIndicator.innerHTML = `
