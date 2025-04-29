@@ -9,9 +9,7 @@
     "name": "Digitec & Galaxus Helper",
     "version": "1.1",
     "description": "Fetch price history and display the lowest prices.",
-    "permissions": [
-        "storage"
-    ],
+    "permissions": [],
     "host_permissions": [
         "*://*.digitec.ch/*",
         "*://*.galaxus.ch/*"
