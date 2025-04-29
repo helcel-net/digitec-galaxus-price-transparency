@@ -191,7 +191,7 @@ const handleCompare = () => scriptURL
                 <small class="">${getPriceString()} 
                   ${genPriceHTML(minPrice)}
                 </small>`
-                target.querySelector('span').style.display = 'none';
+                target.querySelectorAll('span').forEach(i=>i.style.display = 'none');
                 target.appendChild(priceIndicator)
             }).catch(e => console.error(e))
     )))
@@ -212,7 +212,7 @@ const handleShoplist = () => scriptURL
                 <small class="">${getPriceString()} 
                   ${genPriceHTML(minPrice)}
                 </small>`
-                target.querySelector('span').style.display = 'none';
+                target.querySelectorAll('span').forEach(i=>i.style.display = 'none');
                 target.appendChild(priceIndicator)
             }).catch(e => console.error(e))
     )))
