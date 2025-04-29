@@ -7,7 +7,7 @@
     },
 
     "name": "Digitec & Galaxus Helper",
-    "version": "1.1",
+    "version": "1.2",
     "description": "Fetch price history and display the lowest prices.",
     "permissions": [],
     "host_permissions": [
