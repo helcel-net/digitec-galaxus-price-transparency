@@ -50,7 +50,7 @@ jobs:
           FIREFOX_SECRET: ${{ secrets.FIREFOX_SECRET }}
         run: npx web-ext sign --channel listed -s ./dist/firefox/ --upload-source-code  ../builds/Source.zip --artifacts-dir ./dist/firefox --api-key $FIREFOX_ISSUER --api-secret $FIREFOX_SECRET
       - name: Move artifact
-        run: mv ./dist/firefox/<your-extension>-*.xpi ./builds/FirefoxExtension.xpi
+        run: mv ./dist/firefox/digitec_galaxus_helper-*.xpi ./builds/FirefoxExtension.xpi
       - name: Upload FirefoxExtension to release
         uses: Shopify/upload-to-release@07611424e04f1475ddf550e1c0dd650b867d5467
         with:
@@ -74,25 +74,25 @@ jobs:
           client-secret: ${{ secrets.CHROME_CLIENT_SECRET }}
           refresh-token: ${{ secrets.CHROME_REFRESH_TOKEN }}
           zip-path: ./builds/ChromeExtension.zip
-          extension-id: <your chrome extensions id>
+          extension-id: opkinhhinaicnbmofgkocallpfeiggnh
 
       # Upload Edge artifacts
-      - name: Zip Edge Artifacts
-        run: cd ./dist/edge ; zip -r ../../builds/EdgeExtension.zip *
-      - name: Upload EdgeExtension to release
-        uses: Shopify/upload-to-release@07611424e04f1475ddf550e1c0dd650b867d5467
-        with:
-          name: EdgeExtension.zip
-          path: ./builds/EdgeExtension.zip
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Publish to Edge Addon Store
-        continue-on-error: true
-        uses: wdzeng/edge-addon@v2
-        with:
-          product-id: <your edge product id>
-          zip-path: ./builds/EdgeExtension.zip
-          api-key: ${{ secrets.EDGE_CLIENT_SECRET }}
-          client-id: ${{ secrets.EDGE_CLIENT_ID }}
+      # - name: Zip Edge Artifacts
+      #   run: cd ./dist/edge ; zip -r ../../builds/EdgeExtension.zip *
+      # - name: Upload EdgeExtension to release
+      #   uses: Shopify/upload-to-release@07611424e04f1475ddf550e1c0dd650b867d5467
+      #   with:
+      #     name: EdgeExtension.zip
+      #     path: ./builds/EdgeExtension.zip
+      #     repo-token: ${{ secrets.GITHUB_TOKEN }}
+      # - name: Publish to Edge Addon Store
+      #   continue-on-error: true
+      #   uses: wdzeng/edge-addon@v2
+      #   with:
+      #     product-id: <your edge product id>
+      #     zip-path: ./builds/EdgeExtension.zip
+      #     api-key: ${{ secrets.EDGE_CLIENT_SECRET }}
+      #     client-id: ${{ secrets.EDGE_CLIENT_ID }}
 
       - name: Get tag or release info
         id: get_release
