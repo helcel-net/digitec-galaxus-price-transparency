@@ -5,11 +5,12 @@
             "id": "net.helcel.digitec-galaxus@browser"
         }
     },
-
     "name": "Digitec & Galaxus Helper",
     "version": "1.6",
     "description": "Fetch price history and display the lowest prices.",
-    "permissions": [],
+    "permissions": [
+        "storage"
+    ],
     "host_permissions": [
         "*://*.digitec.ch/*",
         "*://*.galaxus.ch/*"
@@ -22,6 +23,9 @@
             ],
             "js": [
                 "content_script.js"
+            ],
+            "css": [
+                "styles.css"
             ]
         }
     ],
