@@ -78,16 +78,19 @@ function median(numbers) {
     return sorted[middle];
 }
 
-function getPercentileValue(numbers, percentile) {
+function getPercentileValue(numbers, percentile = undefined) {
+    if (percentile == undefined) percentile = parseInt(stored_percentile) / 100
+    if (!(percentile >= 0 && percentile <= 1)) percentile = 0.1
     const sorted = Array.from(numbers).sort((a, b) => a - b);
     const index = Math.ceil((percentile) * sorted.length) - 1;
     return sorted[index];
 }
 
-const langRegex = /https?:\/\/[www\.]*[a-z]+\.ch\/([a-zA-Z]{2,})\//
+
+const langRegex = /https?:\/\/[www\.]*[a-z]+\.ch\/([a-zA-Z]{2,})/
 const lang = langRegex.exec(window.location.href)[1]
-const genPriceHTML = (v) => `${Math.round(v * 100) / 100}${Math.round(v) == v ? '.-' : ''}`
-const priceStringLocale = { 'de': 'war', 'en': 'was', 'fr': 'avant', 'it': 'era' }
+const genPriceHTML = (v) => `${v.toFixed((v % 1) ? 2 : 0)}${Math.round(v) == v ? '.-' : ''}`
+const priceStringLocale = { 'de': 'gseh zu', 'en': 'seen at', 'fr': 'vu a', 'it': 'visto a' }
 const getPriceString = () => priceStringLocale[lang]
 const getProductIdFromURL = (url) => {
     const lastPart = url.substring(url.lastIndexOf("/") + 1);
@@ -98,47 +101,53 @@ const getProductIdFromURL = (url) => {
 const handleCurrentProduct = async () => scriptURL
     .then(url => fetchPriceHistory(getProductIdFromURL(window.location.pathname), url))
     .then(v => {
+        if (v.data.productById.price == null) return;
         const currPrice = v.data.productById.price.amountInclusive
         const priceList = v.data.productById.priceHistory.points.filter(v => v.price).map(v => v.price.amountInclusive)
-        const minPrice = getPercentileValue(priceList, 0.1);//Math.min(...priceList)
+        const minPrice = getPercentileValue(priceList);
 
-        const priceIndicator = document.createElement('span')
-        priceIndicator.classList = "yhSYYIi5 yKEoTuX"
-        priceIndicator.innerHTML = `
-        <strong>
-            <button class="yKEoTuX6">${genPriceHTML(currPrice)}</button>
-        </strong>
-        <span class="yKEoTuX4 yKEoTuX2">${getPriceString()} 
-            ${genPriceHTML(minPrice)}
-        </span>`
+        const priceTag = document.createElement('div')
+        priceTag.classList = "tag"
+        priceTag.innerHTML = `<div class="${minPrice <= currPrice ? 'expensiver' : 'cheaper'} tag_text">${Math.round(-(minPrice - currPrice) * 100 / minPrice)}%</div>`
+        {
+            const elem = document.getElementsByClassName('productDetail')[0].querySelector(':scope > div > span')
+            elem.querySelector(':scope > strong > button').innerText = genPriceHTML(currPrice)
+            const smallPrice = document.createElement('span')
+            smallPrice.classList = "current_product_small"
+            smallPrice.innerText = `${getPriceString()} ${genPriceHTML(minPrice)}`
+            elem.appendChild(smallPrice)
+        }
+        {
+            const elem = document.getElementsByClassName('ysCboot1')[0].querySelector(':scope > div> span')
+            elem.querySelector(':scope > strong > button').innerText = genPriceHTML(currPrice)
+            if (elem.querySelector('.current_product_small')) elem.querySelector('.current_product_small').remove()
+            const smallPrice = document.createElement('span')
+            smallPrice.classList = "current_product_small"
+            smallPrice.innerText = `${getPriceString()} ${genPriceHTML(minPrice)}`
+            elem.appendChild(smallPrice)
+        }
         {
             const element = document.getElementsByClassName('productDetail')[0]
-            const divElem = element.querySelector(':scope > div');
-            const spanElem = divElem.querySelector(':scope > span');
-            spanElem.style.display = 'none';
-            divElem.insertBefore(priceIndicator.cloneNode(true), spanElem)
-        }
-        {
-            const element = document.getElementsByClassName('ysCboot1')[0]
-            const divElem = element.querySelector(':scope > div');
-            const spanElem = divElem.querySelector(':scope > span');
-            spanElem.style.display = 'none';
-            divElem.insertBefore(priceIndicator.cloneNode(true), spanElem)
+            const divElem = element.querySelector(':scope > header > div');
+            Array.from(divElem.children).filter(e => e.innerText.endsWith('%')).map(e => e.style.display = 'none')
+
+            if (currPrice != minPrice)
+                divElem.insertBefore(priceTag, divElem.firstChild)
         }
 
-    }).catch(e => { })
+    })
 
 
 const handleBrowse = () => {
 
 }
 
-const handleCart = () =>  scriptURL
-    .then(url => Promise.all(Array.from(document.getElementById('pageContent').querySelector('section > ul').children).map(e=>
+const handleCart = () => scriptURL
+    .then(url => Promise.all(Array.from(document.getElementById('pageContent').querySelector('section > ul').children).map(e =>
         fetchPriceHistory(getProductIdFromURL(e.querySelector('a').href.split('?')[0]), url).then(v => {
             const currPrice = v.data.productById.price.amountInclusive
             const priceList = v.data.productById.priceHistory.points.filter(v => v.price).map(v => v.price.amountInclusive)
-            const minPrice = getPercentileValue(priceList, 0.1);//Math.min(...priceList)
+            const minPrice = getPercentileValue(priceList);
 
             const target = e.querySelector('div > div:nth-of-type(2) > div')
             const interactTarget = target.querySelector('div:nth-of-type(1) > button') || target.querySelector('div:nth-of-type(1) > input')
@@ -171,17 +180,18 @@ const handleCart = () =>  scriptURL
                     observer.observe(newInteractTarget, { attributes: true });
             });
             observer.observe(interactTarget, { attributes: true });
-        }).catch(e => console.error(e))
-    
+        })
+
     )))
 
 const handleCompare = () => scriptURL
-    .then(url => 
-        Promise.all(Array.from(document.getElementsByTagName('article')).map(e=>
+    .then(url =>
+        Promise.all(Array.from(document.getElementById('pageHead').parentElement.querySelectorAll('article')).map(e =>
             fetchPriceHistory(getProductIdFromURL(e.querySelector('a').href.split('?')[0]), url).then(v => {
+                if (v.data.productById.price == null) return;
                 const currPrice = v.data.productById.price.amountInclusive
                 const priceList = v.data.productById.priceHistory.points.filter(v => v.price).map(v => v.price.amountInclusive)
-                const minPrice = getPercentileValue(priceList, 0.1);//Math.min(...priceList)
+                const minPrice = getPercentileValue(priceList);//Math.min(...priceList)
 
                 const target = e.querySelector(':scope > div:nth-of-type(2)')
                 const priceIndicator = document.createElement('span')
@@ -191,18 +201,19 @@ const handleCompare = () => scriptURL
                 <small class="">${getPriceString()} 
                   ${genPriceHTML(minPrice)}
                 </small>`
-                target.querySelectorAll('span').forEach(i=>i.style.display = 'none');
+                target.querySelectorAll('span').forEach(i => i.style.display = 'none');
                 target.appendChild(priceIndicator)
-            }).catch(e => console.error(e))
-    )))
+            })
+        )))
 
 const handleShoplist = () => scriptURL
-    .then(url => 
-        Promise.all(Array.from(document.getElementById('pageContent').querySelectorAll('article')).map(e=>
+    .then(url =>
+        Promise.all(Array.from(document.getElementById('product-list').parentElement.querySelectorAll('article')).map(e =>
             fetchPriceHistory(getProductIdFromURL(e.querySelector('a').href.split('?')[0]), url).then(v => {
+                if (v.data.productById.price == null) return;
                 const currPrice = v.data.productById.price.amountInclusive
                 const priceList = v.data.productById.priceHistory.points.filter(v => v.price).map(v => v.price.amountInclusive)
-                const minPrice = getPercentileValue(priceList, 0.1);//Math.min(...priceList)
+                const minPrice = getPercentileValue(priceList);//Math.min(...priceList)
 
                 const target = e.querySelector(':scope > div:nth-last-of-type(2)')
                 const priceIndicator = document.createElement('span')
@@ -212,10 +223,10 @@ const handleShoplist = () => scriptURL
                 <small class="">${getPriceString()} 
                   ${genPriceHTML(minPrice)}
                 </small>`
-                target.querySelectorAll('span').forEach(i=>i.style.display = 'none');
+                target.querySelectorAll('span').forEach(i => i.style.display = 'none');
                 target.appendChild(priceIndicator)
-            }).catch(e => console.error(e))
-    )))
+            }).catch(e => console.warn(e))
+        )))
 
 const productRegex = /https?:\/\/[www\.]*[a-z]+\.ch\/[a-zA-Z]{2,}\/[a-zA-Z0-9-]+\/product\//
 const cartRegex = /https?:\/\/[www\.]*[a-z]+\.ch\/[a-zA-Z]{2,}\/cart/
@@ -233,10 +244,21 @@ const refreshFunction = () => {
     else return Promise.resolve('');
 }
 
-var currentUrl = '';
+var lastpage = '';
+var hasLoaded = false;
+var stored_percentile = undefined;
+
+browser.storage.local.get('percentile').then(v => stored_percentile = v.percentile)
+
 setInterval(() => {
-    if (currentUrl !== window.location.href)
+    if (stored_percentile == undefined) return;
+    if (document.readyState == 'complete' && !hasLoaded) return hasLoaded = true;
+    if (document.readyState != 'complete') hasLoaded = false;
+    if (lastpage != document.location.href && hasLoaded) {
+        hasLoaded = false;
         refreshFunction().then(_ => {
-            currentUrl = window.location.href;
-        });
-}, 500);
+            lastpage = document.location.href;
+        }).catch(e => console.log(e));
+    }
+}, 200);
+
