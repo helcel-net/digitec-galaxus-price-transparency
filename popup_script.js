@@ -1,3 +1,4 @@
+import browser from 'webextension-polyfill';
 const defv = {
     'percentile': 10,
     'minimum': 7,
