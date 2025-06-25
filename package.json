@@ -6,7 +6,7 @@
     "build:ci:edge": "extension build --browser edge --polyfill"
   },
   "devDependencies": {
-    "extension": "^2.0.0-rc.23",
+    "extension": "^2.0.0-rc.37",
     "web-ext": "^8.7.1"
   }
 }
