@@ -1,3 +1,5 @@
+import browser from 'webextension-polyfill';
+
 const getWebpackScript = async () => {
     const targetScript = Array.from(document.querySelectorAll("script")).find(script =>
         script.src.includes("static/chunks/webpack-"));
