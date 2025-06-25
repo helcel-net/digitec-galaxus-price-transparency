@@ -109,31 +109,31 @@ const handleCurrentProduct = async () => scriptURL
         const priceTag = document.createElement('div')
         priceTag.classList = "tag"
         priceTag.innerHTML = `<div class="${minPrice <= currPrice ? 'expensiver' : 'cheaper'} tag_text">${Math.round(-(minPrice - currPrice) * 100 / minPrice)}%</div>`
-        {
+        try{
             const elem = document.getElementsByClassName('productDetail')[0].querySelector(':scope > div > span')
             elem.querySelector(':scope > strong > button').innerText = genPriceHTML(currPrice)
             const smallPrice = document.createElement('span')
             smallPrice.classList = "current_product_small"
             smallPrice.innerText = `${getPriceString()} ${genPriceHTML(minPrice)}`
             elem.appendChild(smallPrice)
-        }
-        {
-            const elem = document.getElementsByClassName('ysCboot1')[0].querySelector(':scope > div> span')
+        }catch(e){}
+        try{
+            const elem = document.getElementsByClassName('ysCboot1')[0].querySelector('div> span')
             elem.querySelector(':scope > strong > button').innerText = genPriceHTML(currPrice)
             if (elem.querySelector('.current_product_small')) elem.querySelector('.current_product_small').remove()
             const smallPrice = document.createElement('span')
             smallPrice.classList = "current_product_small"
             smallPrice.innerText = `${getPriceString()} ${genPriceHTML(minPrice)}`
             elem.appendChild(smallPrice)
-        }
-        {
+        }catch(e){}
+        try{
             const element = document.getElementsByClassName('productDetail')[0]
             const divElem = element.querySelector(':scope > header > div');
             Array.from(divElem.children).filter(e => e.innerText.endsWith('%')).map(e => e.style.display = 'none')
 
             if (currPrice != minPrice)
                 divElem.insertBefore(priceTag, divElem.firstChild)
-        }
+        }catch(e){}
 
     })
 
