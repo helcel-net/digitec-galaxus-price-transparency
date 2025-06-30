@@ -7,6 +7,6 @@
   },
   "devDependencies": {
     "extension": "^2.0.0-rc.37",
-    "web-ext": "^8.7.1"
+    "web-ext": "^8.8.0"
   }
 }
