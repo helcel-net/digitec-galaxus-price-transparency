@@ -1,5 +1,4 @@
 import browser from 'webextension-polyfill';
-
 const getWebpackScript = async () => {
     const targetScript = Array.from(document.querySelectorAll("script")).find(script =>
         script.src.includes("static/chunks/webpack-"));
@@ -111,15 +110,15 @@ const handleCurrentProduct = async () => scriptURL
         const priceTag = document.createElement('div')
         priceTag.classList = "tag"
         priceTag.innerHTML = `<div class="${minPrice <= currPrice ? 'expensiver' : 'cheaper'} tag_text">${Math.round(-(minPrice - currPrice) * 100 / minPrice)}%</div>`
-        try{
+        {
             const elem = document.getElementsByClassName('productDetail')[0].querySelector(':scope > div > span')
             elem.querySelector(':scope > strong > button').innerText = genPriceHTML(currPrice)
             const smallPrice = document.createElement('span')
             smallPrice.classList = "current_product_small"
             smallPrice.innerText = `${getPriceString()} ${genPriceHTML(minPrice)}`
             elem.appendChild(smallPrice)
-        }catch(e){}
-        try{
+        }
+        {
             const elem = document.getElementsByClassName('ysCboot1')[0].querySelector('div> span')
             elem.querySelector(':scope > strong > button').innerText = genPriceHTML(currPrice)
             if (elem.querySelector('.current_product_small')) elem.querySelector('.current_product_small').remove()
@@ -127,22 +126,19 @@ const handleCurrentProduct = async () => scriptURL
             smallPrice.classList = "current_product_small"
             smallPrice.innerText = `${getPriceString()} ${genPriceHTML(minPrice)}`
             elem.appendChild(smallPrice)
-        }catch(e){}
-        try{
+        }
+        {
             const element = document.getElementsByClassName('productDetail')[0]
             const divElem = element.querySelector(':scope > header > div');
             Array.from(divElem.children).filter(e => e.innerText.endsWith('%')).map(e => e.style.display = 'none')
 
             if (currPrice != minPrice)
                 divElem.insertBefore(priceTag, divElem.firstChild)
-        }catch(e){}
-
+        }
     })
 
 
-const handleBrowse = () => {
-
-}
+const handleBrowse = () => Promise.resolve(0)
 
 const handleCart = () => scriptURL
     .then(url => Promise.all(Array.from(document.getElementById('pageContent').querySelector('section > ul').children).map(e =>
@@ -235,8 +231,6 @@ const cartRegex = /https?:\/\/[www\.]*[a-z]+\.ch\/[a-zA-Z]{2,}\/cart/
 const compareRegex = /https?:\/\/[www\.]*[a-z]+\.ch\/[a-zA-Z]{2,}\/comparison\//
 const shoplistRegex = /https?:\/\/[www\.]*[a-z]+\.ch\/[a-zA-Z]{2,}\/shoplist\//
 
-
-
 const refreshFunction = () => {
     if (false) return Promise.resolve('');
     else if (productRegex.test(window.location.href)) return handleCurrentProduct();
@@ -248,6 +242,7 @@ const refreshFunction = () => {
 
 var lastpage = '';
 var hasLoaded = false;
+var hasRendered = true;
 var stored_percentile = undefined;
 
 browser.storage.local.get('percentile').then(v => stored_percentile = v.percentile)
@@ -256,11 +251,26 @@ setInterval(() => {
     if (stored_percentile == undefined) return;
     if (document.readyState == 'complete' && !hasLoaded) return hasLoaded = true;
     if (document.readyState != 'complete') hasLoaded = false;
-    if (lastpage != document.location.href && hasLoaded) {
+    if (lastpage != document.location.pathname && hasLoaded && hasRendered) {
         hasLoaded = false;
+        hasRendered = false;
+        var refreshingpage = document.location.pathname;
         refreshFunction().then(_ => {
-            lastpage = document.location.href;
+            lastpage = refreshingpage;
         }).catch(e => console.log(e));
     }
 }, 200);
 
+let renderPath = location.pathname;
+let renderTimeout;
+
+const observer = new MutationObserver(() => {
+  clearTimeout(renderTimeout);
+  renderTimeout = setTimeout(() => {
+    if (renderPath != document.location.pathname) {
+        renderPath = document.location.pathname;
+        hasRendered = true;
+    }
+  }, 200);
+});
+observer.observe(document.body, { childList: true, subtree: true });
